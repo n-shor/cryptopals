@@ -1,112 +1,40 @@
-def hex_to_byte_str(hex_str: str):
-    hex_map = {
-        '0': 0,
-        '1': 1,
-        '2': 2,
-        '3': 3,
-        '4': 4,
-        '5': 5,
-        '6': 6,
-        '7': 7,
-        '8': 8,
-        '9': 9,
-        'A': 10,
-        'a': 10,
-        'B': 11,
-        'b': 11,
-        'C': 12,
-        'c': 12,
-        'D': 13,
-        'd': 13,
-        'E': 14,
-        'e': 14,
-        'F': 15,
-        'f': 15
-    }
+def hex_to_bytes(hex_str: str) -> bytes:
+    hex_str = hex_str.lower()
 
-    hex_bytes = ""
+    hex_map = {c: i for (i, c) in enumerate("0123456789abcdef")}
 
-    for char in hex_str:
-        hex_bytes += "{0:b}".format(hex_map[char]).rjust(4, '0')
+    byte_list = [
+        (hex_map[hex_str[i]] << 4)
+        + hex_map[hex_str[i + 1]]
+        for i in range(0, len(hex_str), 2)
+    ]
 
-    return hex_bytes
+    return bytes(byte_list)
 
 
-def byte_str_to_hex(binary_str: str) -> str:
-    if len(binary_str) % 4 != 0:
-        raise ValueError("Binary string length must be multiple of 4")
+def bytes_to_hex(byte_data: bytes) -> str:
+    hex_chars = "0123456789abcdef"
 
-    bin_map = {
-        '0000': '0',
-        '0001': '1',
-        '0010': '2',
-        '0011': '3',
-        '0100': '4',
-        '0101': '5',
-        '0110': '6',
-        '0111': '7',
-        '1000': '8',
-        '1001': '9',
-        '1010': 'a',
-        '1011': 'b',
-        '1100': 'c',
-        '1101': 'd',
-        '1110': 'e',
-        '1111': 'f'
-    }
+    return "".join(hex_chars[b >> 4] + hex_chars[b & 0x0F] for b in byte_data)
 
-    hex_str = ""
-    # Process binary string in chunks of 4 bits
-    for i in range(0, len(binary_str), 4):
-        chunk = binary_str[i:i + 4]
-        hex_str += bin_map[chunk]
 
-    return hex_str
+def hex_to_base_64(hex_str: str) -> str:
+    index_table = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 
-def hex_to_base_64(hex_str: str):
-    index_table = ['A', 'B', 'C', 'D',
-                'E', 'F', 'G', 'H',
-                'I', 'J', 'K', 'L',
-                'M', 'N', 'O', 'P',
-                'Q', 'R', 'S', 'T',
-                'U', 'V', 'W', 'X',
-                'Y', 'Z', 'a', 'b',
-                'c', 'd', 'e', 'f',
-                'g', 'h', 'i', 'j',
-                'k', 'l', 'm', 'n',
-                'o', 'p', 'q', 'r',
-                's', 't', 'u', 'v',
-                'w', 'x', 'y', 'z',
-                '0', '1', '2', '3',
-                '4', '5', '6', '7',
-                '8', '9', '+', '/']
+    byte_data  = hex_to_bytes(hex_str)
+    binary_str = "".join(f"{b:08b}" for b in byte_data)
 
-    base_64_str = ""
-    hex_bytes = hex_to_byte_str(hex_str)
+    base64_str = ""
+    for i in range(0, len(binary_str), 6):
+        segment = binary_str[i:i+6].ljust(6, "0")
+        base64_str += index_table[int(segment, 2)]
 
-    for i in range(0, len(hex_bytes), 6):
-        j = 0
-        char_byte = 0
-        for j in range(6):
-            char_byte *= 2
-            if i + j < len(hex_bytes):
-                char_byte += int(hex_bytes[i + j])
+    return base64_str + '=' * ((-1 * len(byte_data)) % 3)
 
-        base_64_str += index_table[char_byte]
+def byte_xor(b1: bytes, b2: bytes) -> bytes:
+    return bytes((b1[i % len(b1)] ^ b2[i % len(b2)]) for i in range(max(len(b1), len(b2))))
 
-    return base_64_str + '=' * ((-1 * len(hex_str) * 4) % 3)
 
-def hex_xor(hex_first: str, hex_second: str):
-    if len(hex_first) != len(hex_second):
-        raise "Non-equal hex sizes for XOR!"
-
-    bytes_first, bytes_second = hex_to_byte_str(hex_first), hex_to_byte_str(hex_second)
-    res_bytes = ''
-
-    for i in range(len(bytes_first)):
-        if bytes_first[i] == bytes_second[i]:
-            res_bytes += '0'
-        else:
-            res_bytes += '1'
-
-    return byte_str_to_hex(res_bytes)
+def hex_xor(hex1: str, hex2: str) -> str:
+    bytes1, bytes2 = hex_to_bytes(hex1), hex_to_bytes(hex2)
+    return bytes_to_hex(byte_xor(bytes1, bytes2))
