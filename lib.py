@@ -48,11 +48,11 @@ def is_valid_ascii(char: int) -> bool:
 
 
 def calculate_frequency_score(text: bytes):
+    score = 0
+
     for char in text:
         if not is_valid_ascii(char):
-            return math.inf
-
-    score = 0
+            score += 0.03
 
     letter_frequencies = {
         'A': 0.082,
@@ -93,10 +93,9 @@ def calculate_frequency_score(text: bytes):
     return score
 
 
-def single_char_xor_bruteforce(encoded_hex: str):
+def single_char_xor_bruteforce(encoded_hex: str) -> bytes:
     encoded_bytes = hex_to_bytes(encoded_hex)
     best_score = math.inf # lower is better
-    result = 0
     best_result = b'0'
 
     for curr_xor_byte in range(0, 127):
@@ -114,3 +113,19 @@ def single_char_xor_bruteforce(encoded_hex: str):
             best_score = curr_score
 
     return best_result
+
+
+def detect_single_char_xor(hex_list: list[str]) -> tuple[str, bytes]:
+    best_score = math.inf
+    best_res, best_hex = '', ''
+
+    for hex_str in hex_list:
+        curr_res = single_char_xor_bruteforce(hex_str)
+        curr_score = calculate_frequency_score(curr_res)
+
+        if curr_score < best_score:
+            best_hex = hex_str
+            best_res = curr_res
+            best_score = curr_score
+
+    return best_hex, best_res
