@@ -129,3 +129,15 @@ def detect_single_char_xor(hex_list: list[str]) -> tuple[str, bytes]:
             best_score = curr_score
 
     return best_hex, best_res
+
+
+def repeating_key_xor(data: str, key: str) -> str:
+    byte_data = data.encode()
+    byte_key = key.encode()
+    byte_res = []
+
+    for i in range(len(byte_data)):
+        byte_res.append(byte_data[i] ^ byte_key[i % len(byte_key)])
+
+    return bytes_to_hex(bytes(byte_res))
+
