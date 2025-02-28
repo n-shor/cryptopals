@@ -20,11 +20,19 @@ def bytes_to_hex(byte_data: bytes) -> str:
     return "".join(hex_chars[b >> 4] + hex_chars[b & 0x0F] for b in byte_data)
 
 
+def bytes_to_binary(data: bytes) -> str:
+    return "".join(format(i, "08b") for i in data)
+
+
+def str_to_binary(data: str) -> str:
+    return "".join(format(ord(i), "08b") for i in data)
+
+
 def hex_to_base_64(hex_str: str) -> str:
     index_table = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 
     byte_data  = hex_to_bytes(hex_str)
-    binary_str = "".join(f"{b:08b}" for b in byte_data)
+    binary_str = bytes_to_binary(byte_data)
 
     base64_str = ""
     for i in range(0, len(binary_str), 6):
@@ -141,3 +149,7 @@ def repeating_key_xor(data: str, key: str) -> str:
 
     return bytes_to_hex(bytes(byte_res))
 
+
+def hamming_distance(data1: str, data2: str) -> int:
+    bits1, bits2 = map(str_to_binary, (data1, data2))
+    return sum(b1 != b2 for b1, b2 in zip(bits1, bits2))
