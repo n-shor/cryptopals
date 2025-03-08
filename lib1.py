@@ -4,6 +4,29 @@ import subprocess
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 
+# Challenge 1
+
+def bytes_to_binary(data: bytes) -> str:
+    return "".join(format(i, "08b") for i in data)
+
+
+def str_to_binary(data: str) -> str:
+    return "".join(format(ord(i), "08b") for i in data)
+
+
+def hex_to_base64(hex_str: str) -> str:
+    index_table = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+
+    byte_data  = hex_to_bytes(hex_str)
+    binary_str = bytes_to_binary(byte_data)
+
+    base64_str = ""
+    for i in range(0, len(binary_str), 6):
+        segment = binary_str[i:i+6].ljust(6, "0")
+        base64_str += index_table[int(segment, 2)]
+
+    return base64_str + "=" * ((-1 * len(base64_str)) % 4)
+
 
 def hex_to_bytes(hex_str: str) -> bytes:
     hex_str = hex_str.lower()
@@ -23,28 +46,6 @@ def bytes_to_hex(byte_data: bytes) -> str:
     hex_chars = "0123456789abcdef"
 
     return "".join(hex_chars[b >> 4] + hex_chars[b & 0x0F] for b in byte_data)
-
-
-def bytes_to_binary(data: bytes) -> str:
-    return "".join(format(i, "08b") for i in data)
-
-
-def str_to_binary(data: str) -> str:
-    return "".join(format(ord(i), "08b") for i in data)
-
-
-def hex_to_base_64(hex_str: str) -> str:
-    index_table = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-
-    byte_data  = hex_to_bytes(hex_str)
-    binary_str = bytes_to_binary(byte_data)
-
-    base64_str = ""
-    for i in range(0, len(binary_str), 6):
-        segment = binary_str[i:i+6].ljust(6, "0")
-        base64_str += index_table[int(segment, 2)]
-
-    return base64_str + "=" * ((-1 * len(base64_str)) % 4)
 
 
 def base64_to_bytes(base64_string: str) -> bytes:
@@ -69,6 +70,8 @@ def base64_to_bytes(base64_string: str) -> bytes:
     return bytes(result)
 
 
+# Challenge 2
+
 def byte_xor(b1: bytes, b2: bytes) -> bytes:
     return bytes((b1[i % len(b1)] ^ b2[i % len(b2)]) for i in range(max(len(b1), len(b2))))
 
@@ -78,8 +81,7 @@ def hex_xor(hex1: str, hex2: str) -> str:
     return bytes_to_hex(byte_xor(bytes1, bytes2))
 
 
-def is_valid_ascii(char: int) -> bool:
-    return (0x20 <= char <= 0x7E) or char in (0x0A, 0x0D)
+# Challenge 3
 
 def calculate_frequency_score(text: bytes) -> float:
     expected = {
@@ -108,7 +110,7 @@ def calculate_frequency_score(text: bytes) -> float:
         chi_squared += ((observed - expected_freq) ** 2) / expected_freq
 
     for byte in text:
-        if not is_valid_ascii(byte):
+        if chr(byte).upper() not in valid_chars:
             chi_squared += 5
 
     return chi_squared
@@ -132,6 +134,8 @@ def single_char_xor_bruteforce(encoded_hex: str) -> tuple[bytes, int]:
     return best_result, best_xor_byte
 
 
+# Challenge 4
+
 def detect_single_char_xor(hex_list: list[str]) -> tuple[str, bytes]:
     best_score = math.inf
     best_res, best_hex = "", ""
@@ -148,6 +152,8 @@ def detect_single_char_xor(hex_list: list[str]) -> tuple[str, bytes]:
     return best_hex, best_res
 
 
+# Challenge 5
+
 def repeating_key_xor(data: bytes, key: bytes) -> bytes:
     res = []
 
@@ -156,6 +162,7 @@ def repeating_key_xor(data: bytes, key: bytes) -> bytes:
 
     return bytes(res)
 
+# Challenge 6
 
 def hamming_distance(data1: bytes, data2: bytes) -> int:
     bits1, bits2 = map(bytes_to_binary, (data1, data2))
@@ -188,9 +195,7 @@ def guess_repeating_xor_key_length(data: bytes) -> int:
     return best_guess
 
 
-def break_repeating_key_xor() -> str:
-    base64_data = subprocess.check_output(["curl", "--silent", "https://cryptopals.com/static/challenge-data/6.txt"]).decode("ascii").replace("\n", "")
-
+def break_repeating_key_xor(base64_data: str) -> str:
     bytes_data = base64_to_bytes(base64_data)
     key_len = guess_repeating_xor_key_length(bytes_data)
 
@@ -217,11 +222,15 @@ def break_repeating_key_xor() -> str:
     return decrypted_bytes.decode()
 
 
+# Challenge 7
+
 def decrypt_aes_128_ecb(data: bytes, key: bytes) -> bytes:
     cipher = Cipher(algorithms.AES(key), modes.ECB(), backend=default_backend())
     decryptor = cipher.decryptor()
     return decryptor.update(data) + decryptor.finalize()
 
+
+# Challenge 8
 
 def detect_aes_128_ecb(data_list: list[bytes]) -> bytes:
     """ I don't know if there's a better solution, but it's extremely unlikely to have duplicate blocks in short ciphertexts,
