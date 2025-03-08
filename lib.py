@@ -1,6 +1,10 @@
 import math
 import subprocess
 
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.backends import default_backend
+
+
 def hex_to_bytes(hex_str: str) -> bytes:
     hex_str = hex_str.lower()
 
@@ -211,3 +215,10 @@ def break_repeating_key_xor() -> str:
 
     decrypted_bytes = repeating_key_xor(bytes_data, bytes(key)) # xorring a xorred value will result in the original value
     return decrypted_bytes.decode()
+
+
+def decrypt_aes_128_ecb(data: bytes, key: bytes) -> bytes:
+    cipher = Cipher(algorithms.AES(key), modes.ECB(), backend=default_backend())
+    decryptor = cipher.decryptor()
+    return decryptor.update(data) + decryptor.finalize()
+
