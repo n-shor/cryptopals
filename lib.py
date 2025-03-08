@@ -222,3 +222,16 @@ def decrypt_aes_128_ecb(data: bytes, key: bytes) -> bytes:
     decryptor = cipher.decryptor()
     return decryptor.update(data) + decryptor.finalize()
 
+
+def detect_aes_128_ecb(data_list: list[bytes]) -> bytes:
+    """ I don't know if there's a better solution, but it's extremely unlikely to have duplicate blocks in short ciphertexts,
+    so if duplicate blocks exist in the ciphertext, it's likely been encrypted with ECB"""
+    for data in data_list:
+        if len(data) % 16 != 0:
+            continue
+
+        blocks = [data[i:i + 16] for i in range(0, len(data), 16)]
+        if len(set(blocks)) != len(blocks):
+            return data
+
+    return b"Failed to detect ECB"
