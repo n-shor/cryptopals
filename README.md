@@ -12,3 +12,4 @@
 ### Set 2
 - Challenge 9: Implement PKCS#7 padding
 - Challenge 10: Implement CBC mode 
+- Challenge 11: An ECB/CBC detection oracle 
