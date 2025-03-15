@@ -9,3 +9,6 @@
 - Challenge 6: Break repeating-key XOR
 - Challenge 7: AES in ECB mode
 - Challenge 8: Detect AES in ECB mode
+### Set 2
+- Challenge 9: Implement PKCS#7 padding
+- Challenge 10: Implement CBC mode 
