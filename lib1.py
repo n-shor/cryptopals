@@ -71,13 +71,13 @@ def base64_to_bytes(base64_string: str) -> bytes:
 
 # Challenge 2
 
-def byte_xor(b1: bytes, b2: bytes) -> bytes:
+def bytes_xor(b1: bytes, b2: bytes) -> bytes:
     return bytes((b1[i % len(b1)] ^ b2[i % len(b2)]) for i in range(max(len(b1), len(b2))))
 
 
 def hex_xor(hex1: str, hex2: str) -> str:
     bytes1, bytes2 = hex_to_bytes(hex1), hex_to_bytes(hex2)
-    return bytes_to_hex(byte_xor(bytes1, bytes2))
+    return bytes_to_hex(bytes_xor(bytes1, bytes2))
 
 
 # Challenge 3
